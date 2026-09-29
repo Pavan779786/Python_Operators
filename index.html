@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Operators — From Scratch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f0f17;
+  --panel:#171722;
+  --panel-2:#1d1d2b;
+  --border:#2a2a3a;
+  --text:#e9e7f2;
+  --muted:#8f8ca3;
+  --muted-2:#65637a;
+
+  --arith:#5eead4;
+  --assign:#fbbf24;
+  --compare:#c084fc;
+  --logic:#f472b6;
+  --bitwise:#60a5fa;
+  --identity:#4ade80;
+  --member:#fb923c;
+
+  --arith-bg: rgba(94,234,212,.08);
+  --assign-bg: rgba(251,191,36,.08);
+  --compare-bg: rgba(192,132,252,.08);
+  --logic-bg: rgba(244,114,182,.08);
+  --bitwise-bg: rgba(96,165,250,.08);
+  --identity-bg: rgba(74,222,128,.08);
+  --member-bg: rgba(251,146,60,.08);
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter', sans-serif;
+  line-height:1.65;
+  overflow-x:hidden;
+}
+::selection{ background:#5eead4; color:#0f0f17; }
+
+h1,h2,h3,h4{ font-family:'Space Grotesk', sans-serif; font-weight:600; letter-spacing:-0.01em; }
+code, .mono{ font-family:'JetBrains Mono', monospace; }
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important; }
+}
+
+/* progress bar */
+#progress{
+  position:fixed; top:0; left:0; height:3px; width:0%;
+  background:linear-gradient(90deg,var(--arith),var(--bitwise),var(--logic));
+  z-index:999; transition:width .12s linear;
+}
+
+/* layout */
+.wrap{ display:flex; max-width:1180px; margin:0 auto; }
+nav#toc{
+  width:230px; flex-shrink:0; position:sticky; top:0; height:100vh;
+  padding:32px 18px; border-right:1px solid var(--border);
+  overflow-y:auto;
+}
+nav#toc::-webkit-scrollbar{ width:5px; }
+nav#toc::-webkit-scrollbar-thumb{ background:var(--border); border-radius:4px; }
+nav#toc .brand{
+  font-family:'Space Grotesk'; font-weight:700; font-size:1.05rem; margin-bottom:28px;
+  display:flex; align-items:center; gap:8px;
+}
+nav#toc .brand .dot{ width:9px; height:9px; border-radius:50%; background:var(--arith); box-shadow:0 0 12px var(--arith); }
+nav#toc a{
+  display:flex; align-items:center; gap:9px;
+  color:var(--muted); text-decoration:none; font-size:.86rem;
+  padding:7px 10px; border-radius:7px; margin-bottom:2px;
+  border-left:2px solid transparent;
+  transition:color .15s, background .15s, border-color .15s;
+}
+nav#toc a .sw{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+nav#toc a:hover{ color:var(--text); background:var(--panel-2); }
+nav#toc a.active{ color:var(--text); background:var(--panel-2); border-left-color:var(--sw,#5eead4); }
+nav#toc .score-mini{
+  margin-top:26px; padding:14px; border-radius:10px; background:var(--panel);
+  border:1px solid var(--border); font-size:.78rem; color:var(--muted);
+}
+nav#toc .score-mini b{ color:var(--text); font-family:'Space Grotesk'; font-size:1.15rem; display:block; margin-top:3px;}
+
+main{ flex:1; min-width:0; padding:0 0 120px 0; }
+
+/* HERO */
+.hero{
+  position:relative; padding:90px 56px 70px; overflow:hidden;
+  border-bottom:1px solid var(--border);
+}
+.hero::before{
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(600px 300px at 15% 0%, rgba(94,234,212,.10), transparent 60%),
+             radial-gradient(500px 260px at 90% 20%, rgba(244,114,182,.09), transparent 60%);
+  pointer-events:none;
+}
+.hero-eyebrow{ color:var(--muted-2); font-size:.82rem; margin-bottom:14px; position:relative; }
+.hero h1{
+  font-size:clamp(2.1rem, 4.4vw, 3.4rem); line-height:1.08; max-width:16ch; position:relative;
+}
+.hero p.lede{ color:var(--muted); max-width:52ch; margin-top:18px; font-size:1.02rem; position:relative; }
+
+.terminal{
+  margin-top:40px; max-width:640px; background:#0b0b12; border:1px solid var(--border);
+  border-radius:12px; box-shadow:0 30px 60px -20px rgba(0,0,0,.6); position:relative;
+}
+.terminal-bar{
+  display:flex; gap:6px; padding:12px 14px; border-bottom:1px solid var(--border);
+}
+.terminal-bar span{ width:10px; height:10px; border-radius:50%; background:#3a3a4a; }
+.terminal-body{ padding:20px 22px; font-family:'JetBrains Mono'; font-size:.87rem; min-height:150px; }
+.terminal-body .line{ white-space:pre; }
+.terminal-body .prompt{ color:var(--arith); }
+.terminal-body .out{ color:var(--muted); }
+.caret{ display:inline-block; width:7px; height:1em; background:var(--text); vertical-align:middle; animation:blink 1s steps(1) infinite; }
+@keyframes blink{ 50%{ opacity:0; } }
+
+/* section */
+section.cat{ padding:70px 56px; border-bottom:1px solid var(--border); scroll-margin-top:20px; }
+section.cat.intro{ padding-bottom:40px; }
+.cat-head{ display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+.cat-badge{
+  font-family:'JetBrains Mono'; font-weight:700; font-size:.78rem; padding:4px 10px;
+  border-radius:20px; border:1px solid var(--c); color:var(--c); background:var(--cbg);
+}
+.cat-head h2{ font-size:1.7rem; }
+.cat-desc{ color:var(--muted); max-width:62ch; margin-bottom:34px; font-size:.98rem; }
+
+.op-grid{ display:flex; flex-direction:column; gap:16px; }
+.op-card{
+  background:var(--panel); border:1px solid var(--border); border-radius:12px;
+  padding:22px 24px; opacity:0; transform:translateY(14px);
+  transition:opacity .5s ease, transform .5s ease, border-color .2s;
+}
+.op-card.show{ opacity:1; transform:translateY(0); }
+.op-card:hover{ border-color:var(--c); }
+.op-top{ display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:8px; }
+.op-symbol{
+  font-family:'JetBrains Mono'; font-weight:700; font-size:1.25rem; color:var(--c);
+  background:var(--cbg); border-radius:7px; padding:2px 10px; min-width:2ch; text-align:center;
+}
+.op-name{ font-family:'Space Grotesk'; font-weight:600; font-size:1.02rem; }
+.op-desc{ color:var(--muted); font-size:.92rem; margin-bottom:14px; max-width:65ch; }
+.op-example{
+  display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--border);
+  border-radius:9px; overflow:hidden; font-family:'JetBrains Mono'; font-size:.83rem;
+}
+.op-example .code{ padding:12px 14px; background:#0e0e17; white-space:pre; overflow-x:auto; }
+.op-example .result{ padding:12px 14px; background:#101018; color:var(--c); border-left:1px solid var(--border); white-space:pre; overflow-x:auto;}
+.op-example .lbl{ font-family:'Inter'; font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted-2); display:block; margin-bottom:6px; }
+@media (max-width:640px){ .op-example{ grid-template-columns:1fr; } .op-example .result{ border-left:none; border-top:1px solid var(--border); } }
+
+/* quiz */
+.quiz-box{
+  margin-top:36px; background:var(--panel-2); border:1px solid var(--border); border-radius:14px; padding:26px 28px;
+}
+.quiz-box h3{ font-size:1.08rem; display:flex; align-items:center; gap:9px; margin-bottom:4px; }
+.quiz-box h3::before{ content:'?'; width:22px; height:22px; border-radius:50%; background:var(--cbg); color:var(--c); font-family:'JetBrains Mono'; font-size:.8rem; display:flex; align-items:center; justify-content:center; }
+.quiz-sub{ color:var(--muted-2); font-size:.82rem; margin-bottom:20px; }
+.q-item{ margin-bottom:20px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+.q-item:last-of-type{ border-bottom:none; margin-bottom:8px; padding-bottom:0;}
+.q-item p.q-text{ font-size:.93rem; margin-bottom:10px; font-family:'JetBrains Mono'; }
+.q-opts{ display:flex; flex-direction:column; gap:7px; }
+.q-opt{
+  display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px;
+  border:1px solid var(--border); cursor:pointer; font-size:.87rem; transition:border-color .15s, background .15s;
+}
+.q-opt:hover{ border-color:var(--c); }
+.q-opt input{ accent-color:var(--c); }
+.q-opt.correct{ border-color:var(--arith); background:var(--arith-bg); }
+.q-opt.wrong{ border-color:#f87171; background:rgba(248,113,113,.08); }
+.q-fb{ font-size:.82rem; margin-top:8px; color:var(--muted); display:none; }
+.q-fb.show{ display:block; }
+.btn{
+  font-family:'Space Grotesk'; font-weight:600; font-size:.86rem; color:#0f0f17;
+  background:var(--c); border:none; padding:10px 20px; border-radius:8px; cursor:pointer;
+  transition:transform .15s, opacity .15s;
+}
+.btn:hover{ transform:translateY(-1px); opacity:.92; }
+.btn:active{ transform:translateY(0); }
+.btn.secondary{ background:transparent; border:1px solid var(--border); color:var(--text); }
+.quiz-result{ margin-top:14px; font-size:.88rem; color:var(--muted); font-family:'JetBrains Mono'; display:none; }
+.quiz-result.show{ display:block; }
+
+/* fill in the blanks */
+.fib-section{ padding:70px 56px; }
+.fib-item{
+  background:var(--panel); border:1px solid var(--border); border-radius:12px;
+  padding:18px 20px; margin-bottom:14px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+}
+.fib-num{ font-family:'JetBrains Mono'; color:var(--muted-2); font-size:.8rem; width:24px; flex-shrink:0; }
+.fib-text{ font-family:'JetBrains Mono'; font-size:.9rem; flex:1; min-width:220px; }
+.fib-input{
+  font-family:'JetBrains Mono'; background:#0e0e17; border:1px solid var(--border); color:var(--text);
+  border-radius:6px; padding:6px 10px; width:90px; text-align:center; font-size:.9rem;
+}
+.fib-input:focus{ outline:none; border-color:#5eead4; }
+.fib-input.correct{ border-color:#4ade80; color:#4ade80; }
+.fib-input.wrong{ border-color:#f87171; color:#f87171; }
+.fib-ans{ font-size:.78rem; color:var(--muted-2); width:100%; display:none; }
+.fib-ans.show{ display:block; }
+
+.finale{
+  padding:70px 56px 40px; text-align:center;
+}
+.finale h2{ font-size:1.8rem; margin-bottom:10px; }
+.finale p{ color:var(--muted); margin-bottom:26px; }
+#final-score{ font-family:'Space Grotesk'; font-size:3rem; font-weight:700; }
+#final-score span{ font-size:1.4rem; color:var(--muted); }
+.badge-msg{ font-size:.92rem; color:var(--muted); margin-top:8px; }
+
+.recap{ padding:60px 56px; }
+.recap table{ width:100%; border-collapse:collapse; font-size:.87rem; }
+.recap th, .recap td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); }
+.recap th{ color:var(--muted-2); font-weight:500; font-family:'Space Grotesk'; text-transform:uppercase; font-size:.72rem; letter-spacing:.05em; }
+.recap td.sym{ font-family:'JetBrains Mono'; }
+.recap tr:hover td{ background:var(--panel); }
+
+footer{ text-align:center; padding:40px; color:var(--muted-2); font-size:.8rem; }
+
+@media (max-width:860px){
+  nav#toc{ display:none; }
+  .hero, section.cat, .fib-section, .recap, .finale{ padding-left:26px; padding-right:26px; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<div class="wrap">
+  <nav id="toc">
+    <div class="brand"><span class="dot"></span> Py Operators</div>
+    <a href="#intro" data-sw="#5eead4">Introduction</a>
+    <a href="#arithmetic" data-sw="#5eead4"><span class="sw" style="background:#5eead4"></span>Arithmetic</a>
+    <a href="#assignment" data-sw="#fbbf24"><span class="sw" style="background:#fbbf24"></span>Assignment</a>
+    <a href="#comparison" data-sw="#c084fc"><span class="sw" style="background:#c084fc"></span>Comparison</a>
+    <a href="#logical" data-sw="#f472b6"><span class="sw" style="background:#f472b6"></span>Logical</a>
+    <a href="#identity" data-sw="#4ade80"><span class="sw" style="background:#4ade80"></span>Identity</a>
+    <a href="#membership" data-sw="#fb923c"><span class="sw" style="background:#fb923c"></span>Membership</a>
+    <a href="#recap">Recap Table</a>
+    <a href="#blanks">Fill in the Blanks</a>
+    <a href="#finale">Final Score</a>
+    <div class="score-mini">Running quiz score<b id="mini-score">0 / 0</b></div>
+  </nav>
+
+  <main>
+    <section class="hero" id="intro">
+      <div class="hero-eyebrow">a from-scratch guide, for people who've never seen an operator before</div>
+      <h1>Python Operators, explained one symbol at a time</h1>
+      <p class="lede">An operator is just a small symbol that tells Python to <em>do</em> something with values — add them, compare them, combine conditions, or check what's inside something. That's it. No prior programming knowledge needed — we'll build up from what a "value" even is.</p>
+
+      <div class="terminal">
+        <div class="terminal-bar"><span style="background:#f87171"></span><span style="background:#fbbf24"></span><span style="background:#4ade80"></span></div>
+        <div class="terminal-body" id="typer"></div>
+      </div>
+    </section>
+
+    <section class="cat intro">
+      <div class="cat-desc" style="max-width:70ch; font-size:1rem;">
+        Think of an operator the way you'd think of a math symbol like <code>+</code> or <code>=</code> on a calculator. In Python, the "numbers" on either side of an operator are called <strong>operands</strong>. So in <code>5 + 3</code>, the operands are <code>5</code> and <code>3</code>, and <code>+</code> is the operator. Python groups its operators into seven families, based on what job they do. We'll go through each family below — every operator gets a plain-English explanation, a runnable example, and its real output. At the end of each family there's a short quiz, and right at the end there's a mixed fill-in-the-blanks round.
+      </div>
+    </section>
+
+    <!-- sections injected by JS -->
+    <div id="sections"></div>
+
+    <section class="recap" id="recap">
+      <div class="cat-head"><h2>Quick recap table</h2></div>
+      <p class="cat-desc">Every operator we covered, in one place.</p>
+      <table id="recap-table"></table>
+    </section>
+
+    <section class="fib-section" id="blanks">
+      <div class="cat-head"><h2>Fill in the blanks</h2></div>
+      <p class="cat-desc">Mixed questions covering every operator family. Type the missing operator or symbol, then check your answers.</p>
+      <div id="fib-list"></div>
+      <button class="btn" id="fib-check" style="--c:#5eead4;">Check all answers</button>
+      <button class="btn secondary" id="fib-reset">Reset</button>
+    </section>
+
+    <section class="finale" id="finale">
+      <h2>How did you do?</h2>
+      <p>Your combined score across every quiz and the fill-in-the-blanks round.</p>
+      <div id="final-score">0 <span>/ 0</span></div>
+      <div class="badge-msg" id="badge-msg">Answer the quizzes above, then come back here.</div>
+      <button class="btn secondary" id="recalc" style="margin-top:18px;">Recalculate</button>
+    </section>
+
+    <footer>Built for learning Python operators from zero. Scroll back up any time — your answers stay put.</footer>
+  </main>
+</div>
+
+<script>
+/* ---------------------------------------------------------
+   DATA: one object per operator family
+--------------------------------------------------------- */
+const categories = [
+  {
+    id:'arithmetic', title:'Arithmetic Operators', color:'--arith', bg:'--arith-bg',
+    desc:'These do the math you already know from school — plus two Python-specific ones for division and powers.',
+    ops:[
+      {sym:'+', name:'Addition', desc:'Adds two values together.', code:'x = 5\ny = 3\nprint(x + y)', out:'8'},
+      {sym:'-', name:'Subtraction', desc:'Subtracts the right value from the left.', code:'x = 5\ny = 3\nprint(x - y)', out:'2'},
+      {sym:'*', name:'Multiplication', desc:'Multiplies two values.', code:'x = 5\ny = 3\nprint(x * y)', out:'15'},
+      {sym:'/', name:'Division', desc:'Divides and always gives a decimal (float) result, even if it divides evenly.', code:'x = 10\ny = 4\nprint(x / y)', out:'2.5'},
+      {sym:'//', name:'Floor Division', desc:'Divides and rounds DOWN to the nearest whole number — it throws away the remainder.', code:'x = 10\ny = 4\nprint(x // y)', out:'2'},
+      {sym:'%', name:'Modulus', desc:'Gives you the remainder left over after division. Very useful for checking odd/even numbers.', code:'x = 10\ny = 4\nprint(x % y)', out:'2'},
+      {sym:'**', name:'Exponent', desc:'Raises the left value to the power of the right value.', code:'x = 2\ny = 5\nprint(x ** y)', out:'32'},
+    ],
+    quiz:[
+      {q:'What does print(9 / 2) output in Python?', opts:['4','4.5','4.0','Error'], a:1},
+      {q:'What does print(9 // 2) output?', opts:['4','4.5','4.0','5'], a:0},
+      {q:'What does print(9 % 2) output?', opts:['0','1','4','4.5'], a:1},
+      {q:'What does print(2 ** 3) output?', opts:['6','8','9','5'], a:1},
+    ]
+  },
+  {
+    id:'assignment', title:'Assignment Operators', color:'--assign', bg:'--assign-bg',
+    desc:'These store a value into a variable, or update an existing variable in one short step.',
+    ops:[
+      {sym:'=', name:'Assign', desc:'Stores the value on the right into the variable on the left.', code:'x = 10\nprint(x)', out:'10'},
+      {sym:'+=', name:'Add and assign', desc:'Adds the right value to the variable, then saves the result back into it.', code:'x = 10\nx += 5\nprint(x)', out:'15'},
+      {sym:'-=', name:'Subtract and assign', desc:'Subtracts the right value from the variable and saves it back.', code:'x = 10\nx -= 4\nprint(x)', out:'6'},
+      {sym:'*=', name:'Multiply and assign', desc:'Multiplies the variable by the right value and saves it back.', code:'x = 10\nx *= 3\nprint(x)', out:'30'},
+      {sym:'/=', name:'Divide and assign', desc:'Divides the variable by the right value and saves it back (always a float).', code:'x = 10\nx /= 4\nprint(x)', out:'2.5'},
+      {sym:'//=', name:'Floor-divide and assign', desc:'Floor-divides the variable and saves the rounded-down result back.', code:'x = 10\nx //= 4\nprint(x)', out:'2'},
+      {sym:'%=', name:'Modulus and assign', desc:'Replaces the variable with the remainder of dividing it by the right value.', code:'x = 10\nx %= 4\nprint(x)', out:'2'},
+      {sym:'**=', name:'Power and assign', desc:'Raises the variable to the given power and saves it back.', code:'x = 2\nx **= 4\nprint(x)', out:'16'},
+    ],
+    quiz:[
+      {q:'x = 10 then x += 5 — what is x now?', opts:['10','5','15','105'], a:2},
+      {q:'x = 20 then x -= 8 — what is x now?', opts:['12','28','8','-12'], a:0},
+      {q:'x = 3 then x *= 4 — what is x now?', opts:['7','12','34','1.33'], a:1},
+      {q:'x = 2 then x **= 3 — what is x now?', opts:['6','5','8','9'], a:2},
+    ]
+  },
+  {
+    id:'comparison', title:'Comparison Operators', color:'--compare', bg:'--compare-bg',
+    desc:'These compare two values and always give back one of two answers: True or False.',
+    ops:[
+      {sym:'==', name:'Equal to', desc:'True if both values are the same. Note: this is two equal signs — one = is for assignment, not comparison.', code:'print(5 == 5)', out:'True'},
+      {sym:'!=', name:'Not equal to', desc:'True if the values are different.', code:'print(5 != 3)', out:'True'},
+      {sym:'>', name:'Greater than', desc:'True if the left value is bigger.', code:'print(7 > 3)', out:'True'},
+      {sym:'<', name:'Less than', desc:'True if the left value is smaller.', code:'print(7 < 3)', out:'False'},
+      {sym:'>=', name:'Greater than or equal to', desc:'True if the left value is bigger than, or the same as, the right.', code:'print(5 >= 5)', out:'True'},
+      {sym:'<=', name:'Less than or equal to', desc:'True if the left value is smaller than, or the same as, the right.', code:'print(5 <= 4)', out:'False'},
+    ],
+    quiz:[
+      {q:'print(10 == 10.0) outputs?', opts:['True','False','Error','10'], a:0},
+      {q:'print(8 != 8) outputs?', opts:['True','False','8','Error'], a:1},
+      {q:'print(3 >= 3) outputs?', opts:['False','3','True','Error'], a:2},
+      {q:'Which symbol checks "equal to" (not assignment)?', opts:['=','==','=>','eq'], a:1},
+    ]
+  },
+  {
+    id:'logical', title:'Logical Operators', color:'--logic', bg:'--logic-bg',
+    desc:'These combine multiple True/False conditions into one final True/False answer.',
+    ops:[
+      {sym:'and', name:'And', desc:'True only if BOTH sides are True.', code:'age = 20\nprint(age > 18 and age < 30)', out:'True'},
+      {sym:'or', name:'Or', desc:'True if AT LEAST ONE side is True.', code:'age = 15\nprint(age < 10 or age < 18)', out:'True'},
+      {sym:'not', name:'Not', desc:'Flips True to False, and False to True.', code:'is_raining = False\nprint(not is_raining)', out:'True'},
+    ],
+    quiz:[
+      {q:'print(True and False) outputs?', opts:['True','False','None','Error'], a:1},
+      {q:'print(True or False) outputs?', opts:['True','False','None','Error'], a:0},
+      {q:'print(not True) outputs?', opts:['True','False','1','0'], a:1},
+      {q:'print(5 > 2 and 5 < 10) outputs?', opts:['5','True','False','10'], a:1},
+    ]
+  },
+  {
+    id:'identity', title:'Identity Operators', color:'--identity', bg:'--identity-bg',
+    desc:'These check whether two variables point to the exact same object in memory — not just whether they look equal.',
+    ops:[
+      {sym:'is', name:'Is', desc:'True if both variables refer to the exact same object in memory.', code:'a = [1, 2]\nb = a\nprint(a is b)', out:'True'},
+      {sym:'is not', name:'Is not', desc:'True if the variables refer to different objects, even if the values look the same.', code:'a = [1, 2]\nb = [1, 2]\nprint(a is not b)', out:'True'},
+    ],
+    quiz:[
+      {q:'a = [1,2]; b = [1,2]; print(a == b) outputs?', opts:['True','False','Error','None'], a:0},
+      {q:'a = [1,2]; b = [1,2]; print(a is b) outputs?', opts:['True','False','Error','None'], a:1},
+      {q:'"is" compares...', opts:['values only','object identity (same memory)','data types','string length'], a:1},
+      {q:'a = 5; b = a; print(a is b) outputs?', opts:['False','True','Error','5'], a:1},
+    ]
+  },
+  {
+    id:'membership', title:'Membership Operators', color:'--member', bg:'--member-bg',
+    desc:'These check whether a value exists inside a collection, like a list, string, or tuple.',
+    ops:[
+      {sym:'in', name:'In', desc:'True if the value is found inside the collection.', code:'fruits = ["apple", "mango"]\nprint("mango" in fruits)', out:'True'},
+      {sym:'not in', name:'Not in', desc:'True if the value is NOT found inside the collection.', code:'fruits = ["apple", "mango"]\nprint("grape" not in fruits)', out:'True'},
+    ],
+    quiz:[
+      {q:'print("a" in "cat") outputs?', opts:['True','False','Error','"a"'], a:0},
+      {q:'nums = [1,2,3]; print(5 in nums) outputs?', opts:['True','False','Error','5'], a:1},
+      {q:'print(3 not in [1,2,4]) outputs?', opts:['True','False','Error','3'], a:0},
+      {q:'Membership operators are commonly used with...', opts:['only integers','lists, strings, tuples','only booleans','functions only'], a:1},
+    ]
+  },
+];
+
+const fillBlanks = [
+  {text:'x = 10\ny = 3\nprint(x ___ y)  # outputs 13', ans:['+']},
+  {text:'x = 10\nprint(x ___ 3)  # outputs 1 (the remainder)', ans:['%']},
+  {text:'x = 10\nx ___ 5   # x becomes 15, shorthand for x = x + 5', ans:['+=']},
+  {text:'print(7 ___ 7)  # outputs True, checks equality', ans:['==']},
+  {text:'print(4 ___ 9)  # outputs True, since 4 is smaller', ans:['<']},
+  {text:'age = 25\nprint(age > 18 ___ age < 40)  # outputs True, both must be True', ans:['and']},
+  {text:'is_off = True\nprint(___ is_off)  # outputs False, flips the value', ans:['not']},
+  {text:'print(2 ___ 3)  # outputs 8, raises to a power', ans:['**']},
+  {text:'print(9 ___ 2)  # outputs 4, rounds down after dividing', ans:['//']},
+  {text:'a = [1,2]\nb = a\nprint(a ___ b)  # outputs True, same object in memory', ans:['is']},
+  {text:'cart = ["pen","book"]\nprint("book" ___ cart)  # outputs True, item exists inside', ans:['in']},
+];
+
+/* ---------------------------------------------------------
+   RENDER
+--------------------------------------------------------- */
+const sectionsEl = document.getElementById('sections');
+let quizState = {}; // {catId: {answered:0, correct:0, total:n}}
+let fibState = {answered:false, correct:0, total:fillBlanks.length};
+
+categories.forEach(cat=>{
+  quizState[cat.id] = {correct:0, done:0, total:cat.quiz.length};
+
+  const section = document.createElement('section');
+  section.className = 'cat';
+  section.id = cat.id;
+  section.style.setProperty('--c', `var(${cat.color})`);
+  section.style.setProperty('--cbg', `var(${cat.bg})`);
+
+  let opsHtml = cat.ops.map(op=>`
+    <div class="op-card">
+      <div class="op-top">
+        <span class="op-symbol">${op.sym}</span>
+        <span class="op-name">${op.name}</span>
+      </div>
+      <p class="op-desc">${op.desc}</p>
+      <div class="op-example">
+        <div class="code"><span class="lbl">Code</span>${op.code.replace(/</g,'&lt;')}</div>
+        <div class="result"><span class="lbl">Output</span>${op.out}</div>
+      </div>
+    </div>
+  `).join('');
+
+  let quizHtml = cat.quiz.map((q,qi)=>`
+    <div class="q-item" data-correct="${q.a}">
+      <p class="q-text">${qi+1}. ${q.q}</p>
+      <div class="q-opts">
+        ${q.opts.map((o,oi)=>`
+          <label class="q-opt">
+            <input type="radio" name="${cat.id}-q${qi}" value="${oi}">
+            <span>${o}</span>
+          </label>
+        `).join('')}
+      </div>
+      <p class="q-fb"></p>
+    </div>
+  `).join('');
+
+  section.innerHTML = `
+    <div class="cat-head">
+      <span class="cat-badge">family</span>
+      <h2>${cat.title}</h2>
+    </div>
+    <p class="cat-desc">${cat.desc}</p>
+    <div class="op-grid">${opsHtml}</div>
+    <div class="quiz-box">
+      <h3>${cat.title} — quick quiz</h3>
+      <p class="quiz-sub">${cat.quiz.length} questions. Pick an answer for each, then check.</p>
+      ${quizHtml}
+      <button class="btn" data-check="${cat.id}">Check answers</button>
+      <button class="btn secondary" data-reset="${cat.id}">Reset</button>
+      <p class="quiz-result" id="result-${cat.id}"></p>
+    </div>
+  `;
+  sectionsEl.appendChild(section);
+});
+
+/* recap table */
+const recapTable = document.getElementById('recap-table');
+let rows = '<tr><th>Family</th><th>Symbol</th><th>Name</th></tr>';
+categories.forEach(cat=>{
+  cat.ops.forEach(op=>{
+    rows += `<tr><td>${cat.title}</td><td class="sym" style="color:var(${cat.color})">${op.sym}</td><td>${op.name}</td></tr>`;
+  });
+});
+recapTable.innerHTML = rows;
+
+/* fill in the blanks */
+const fibList = document.getElementById('fib-list');
+fillBlanks.forEach((item,i)=>{
+  const div = document.createElement('div');
+  div.className = 'fib-item';
+  const parts = item.text.split('___');
+  const codeHtml = parts[0].replace(/</g,'&lt;') + `<input type="text" class="fib-input" data-idx="${i}">` + parts[1].replace(/</g,'&lt;');
+  div.innerHTML = `<span class="fib-num">${String(i+1).padStart(2,'0')}</span><span class="fib-text">${codeHtml}</span><span class="fib-ans" id="fib-ans-${i}">Answer: <code>${item.ans[0]}</code></span>`;
+  fibList.appendChild(div);
+});
+
+/* ---------------------------------------------------------
+   INTERACTIVITY: quiz checking
+--------------------------------------------------------- */
+document.addEventListener('click', (e)=>{
+  if(e.target.dataset.check){
+    const catId = e.target.dataset.check;
+    const section = document.getElementById(catId);
+    const items = section.querySelectorAll('.q-item');
+    let correct = 0;
+    items.forEach(item=>{
+      const correctIdx = item.dataset.correct;
+      const selected = item.querySelector('input:checked');
+      const opts = item.querySelectorAll('.q-opt');
+      opts.forEach((opt,oi)=>{
+        opt.classList.remove('correct','wrong');
+        if(String(oi) === correctIdx) opt.classList.add('correct');
+      });
+      if(selected){
+        if(selected.value === correctIdx){ correct++; }
+        else{ opts[selected.value].classList.add('wrong'); }
+      }
+    });
+    quizState[catId].correct = correct;
+    quizState[catId].done = items.length;
+    const resultEl = document.getElementById('result-'+catId);
+    resultEl.textContent = `Score: ${correct} / ${items.length}`;
+    resultEl.classList.add('show');
+    updateMiniScore();
+  }
+  if(e.target.dataset.reset){
+    const catId = e.target.dataset.reset;
+    const section = document.getElementById(catId);
+    section.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
+    section.querySelectorAll('.q-opt').forEach(o=>o.classList.remove('correct','wrong'));
+    document.getElementById('result-'+catId).classList.remove('show');
+    quizState[catId].correct = 0; quizState[catId].done = 0;
+    updateMiniScore();
+  }
+});
+
+document.getElementById('fib-check').addEventListener('click', ()=>{
+  let correct = 0;
+  document.querySelectorAll('.fib-input').forEach(inp=>{
+    const idx = inp.dataset.idx;
+    const val = inp.value.trim();
+    const ans = fillBlanks[idx].ans;
+    const isCorrect = ans.some(a=>a.toLowerCase() === val.toLowerCase());
+    inp.classList.remove('correct','wrong');
+    inp.classList.add(isCorrect ? 'correct' : 'wrong');
+    document.getElementById('fib-ans-'+idx).classList.add('show');
+    if(isCorrect) correct++;
+  });
+  fibState.answered = true;
+  fibState.correct = correct;
+  updateMiniScore();
+});
+document.getElementById('fib-reset').addEventListener('click', ()=>{
+  document.querySelectorAll('.fib-input').forEach(inp=>{ inp.value=''; inp.classList.remove('correct','wrong'); });
+  document.querySelectorAll('.fib-ans').forEach(a=>a.classList.remove('show'));
+  fibState = {answered:false, correct:0, total:fillBlanks.length};
+  updateMiniScore();
+});
+
+function totalScore(){
+  let correct = 0, total = 0;
+  Object.values(quizState).forEach(s=>{ correct += s.correct; total += s.total; });
+  correct += fibState.correct; total += fibState.total;
+  return {correct, total};
+}
+function updateMiniScore(){
+  const {correct, total} = totalScore();
+  document.getElementById('mini-score').textContent = `${correct} / ${total}`;
+}
+document.getElementById('recalc').addEventListener('click', ()=>{
+  const {correct, total} = totalScore();
+  document.getElementById('final-score').innerHTML = `${correct} <span>/ ${total}</span>`;
+  const pct = total ? correct/total : 0;
+  const msg = document.getElementById('badge-msg');
+  if(total === 0) msg.textContent = 'Answer the quizzes above, then come back here.';
+  else if(pct === 1) msg.textContent = "Perfect score — you've got every operator down.";
+  else if(pct >= 0.75) msg.textContent = "Strong grasp — revisit the ones you missed above.";
+  else if(pct >= 0.5) msg.textContent = "Good start — scroll back through the trickier families.";
+  else msg.textContent = "Worth another pass through the sections above.";
+});
+
+/* ---------------------------------------------------------
+   scroll progress + nav active state
+--------------------------------------------------------- */
+const progress = document.getElementById('progress');
+window.addEventListener('scroll', ()=>{
+  const h = document.documentElement;
+  const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  progress.style.width = scrolled + '%';
+});
+
+const navLinks = document.querySelectorAll('#toc a[href^="#"]');
+const allSections = document.querySelectorAll('section[id]');
+const navObserver = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    const link = document.querySelector(`#toc a[href="#${entry.target.id}"]`);
+    if(!link) return;
+    if(entry.isIntersecting){
+      navLinks.forEach(l=>l.classList.remove('active'));
+      link.classList.add('active');
+      if(link.dataset.sw) link.style.setProperty('--sw', link.dataset.sw);
+    }
+  });
+}, {rootMargin:'-20% 0px -70% 0px'});
+allSections.forEach(s=>navObserver.observe(s));
+
+/* card reveal on scroll */
+const cardObserver = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      entry.target.classList.add('show');
+      cardObserver.unobserve(entry.target);
+    }
+  });
+}, {threshold:0.15});
+document.querySelectorAll('.op-card').forEach(c=>cardObserver.observe(c));
+
+/* ---------------------------------------------------------
+   hero terminal typing animation
+--------------------------------------------------------- */
+const typerEl = document.getElementById('typer');
+const script = [
+  {type:'prompt', text:'>>> price = 250\n'},
+  {type:'prompt', text:'>>> discount = 15\n'},
+  {type:'prompt', text:'>>> print(price - discount)\n'},
+  {type:'out', text:'235\n'},
+  {type:'prompt', text:'>>> print(price > 200 and discount < 20)\n'},
+  {type:'out', text:'True\n'},
+];
+let si = 0, ci = 0, buffer = '';
+function typeStep(){
+  if(si >= script.length){
+    typerEl.innerHTML = buffer + '<span class="caret"></span>';
+    return;
+  }
+  const cur = script[si];
+  if(ci === 0 && cur.type === 'out'){
+    // print instantly-ish, output appears after a short pause
+    setTimeout(()=>{
+      buffer += `<span class="out">${cur.text}</span>`;
+      typerEl.innerHTML = buffer + '<span class="caret"></span>';
+      si++; ci=0;
+      setTimeout(typeStep, 260);
+    }, 320);
+    return;
+  }
+  if(ci < cur.text.length){
+    const partial = buffer + `<span class="${cur.type}">${cur.text.slice(0,ci+1)}</span>`;
+    typerEl.innerHTML = partial + '<span class="caret"></span>';
+    ci++;
+    setTimeout(typeStep, cur.type==='prompt' ? 32 : 10);
+  } else {
+    buffer += `<span class="${cur.type}">${cur.text}</span>`;
+    si++; ci=0;
+    setTimeout(typeStep, cur.type==='out' ? 380 : 120);
+  }
+}
+setTimeout(typeStep, 500);
+</script>
+</body>
+</html>
